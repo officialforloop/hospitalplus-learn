@@ -2,8 +2,10 @@ import {DatabaseSync} from 'node:sqlite';
 import {randomBytes,scryptSync,timingSafeEqual,randomUUID} from 'node:crypto';
 import {blankProgress,scenarios,assessStructured} from './public/scenarios.js';
 import {parseSaved,assess} from './public/learning.js';
+import {validateResource} from './public/resources.js';
 export function createStore(filename){
  const db=new DatabaseSync(filename);db.exec(`PRAGMA foreign_keys=ON; CREATE TABLE IF NOT EXISTS users(id TEXT PRIMARY KEY,name TEXT NOT NULL UNIQUE,role TEXT NOT NULL,salt TEXT NOT NULL,hash TEXT NOT NULL); CREATE TABLE IF NOT EXISTS progress(user_id TEXT PRIMARY KEY REFERENCES users(id),data TEXT NOT NULL,revision INTEGER NOT NULL); CREATE TABLE IF NOT EXISTS submissions(id TEXT PRIMARY KEY,user_id TEXT NOT NULL REFERENCES users(id),scenario TEXT NOT NULL,answers TEXT NOT NULL,result TEXT NOT NULL,date TEXT NOT NULL); CREATE TABLE IF NOT EXISTS assignments(id TEXT PRIMARY KEY,instructor_id TEXT REFERENCES users(id),learner_id TEXT REFERENCES users(id),scenario TEXT NOT NULL,date TEXT NOT NULL,UNIQUE(instructor_id,learner_id,scenario)); CREATE TABLE IF NOT EXISTS reviews(submission_id TEXT PRIMARY KEY REFERENCES submissions(id),instructor_id TEXT REFERENCES users(id),comment TEXT NOT NULL,date TEXT NOT NULL);`);
+ db.exec('CREATE TABLE IF NOT EXISTS resources(id TEXT PRIMARY KEY,owner TEXT NOT NULL REFERENCES users(id),data TEXT NOT NULL,reviewed TEXT,updated TEXT NOT NULL)');
  const createUser=(name,password,role='learner')=>{const id=randomUUID(),salt=randomBytes(16).toString('hex');db.prepare('INSERT INTO users VALUES(?,?,?,?,?)').run(id,name,role,salt,scryptSync(password,salt,64).toString('hex'));return {id,name,role};};
  const authenticate=(name,password)=>{const user=db.prepare('SELECT * FROM users WHERE name=?').get(name);const salt=user?.salt||'invalid-account';const hash=scryptSync(password,salt,64);return user&&timingSafeEqual(hash,Buffer.from(user.hash,'hex'))?{id:user.id,name:user.name,role:user.role}:null;};
  const progress=id=>{const row=db.prepare('SELECT * FROM progress WHERE user_id=?').get(id);return row?{progress:JSON.parse(row.data),revision:row.revision}:{progress:blankProgress(),revision:0};};
@@ -20,6 +22,7 @@ export function createApi(store){
    if(!body||typeof body!=='object'||Array.isArray(body))throw fail(400,'Expected a JSON object.');
    const path=url.pathname;const token=(req.headers.cookie||'').match(/(?:^|;\s*)hpl_session=([a-f0-9]+)/)?.[1];let session=sessions.get(token);if(session&&session.expires<Date.now()){sessions.delete(token);session=null;}
    if(path==='/api/session'&&req.method==='GET')return reply(res,200,{user:session?.user||null});
+   if(path==='/api/resources'&&req.method==='GET')return reply(res,200,{resources:session?db.prepare('SELECT r.*,u.name reviewer FROM resources r JOIN users u ON u.id=r.owner ORDER BY r.updated DESC').all().map(r=>({...JSON.parse(r.data),id:r.id,owner:r.owner,reviewer:r.reviewed?r.reviewer:null,reviewed:r.reviewed,checked:r.updated.slice(0,10),format:'Institution link',offline:false})):[]});
    if(['/api/register','/api/login'].includes(path)&&req.method==='POST'){
     if(typeof body.name!=='string'||!/^[a-zA-Z0-9_-]{3,40}$/.test(body.name)||typeof body.password!=='string'||body.password.length<10||body.password.length>128)throw fail(400,'Use a 3–40 character username and a 10–128 character password.');
     const bucket=req.socket.remoteAddress||'local',rate=failures.get(bucket)||{count:0,until:0};if(rate.until>Date.now()&&rate.count>=10)throw fail(429,'Too many attempts. Try again in 15 minutes.');
@@ -46,6 +49,12 @@ export function createApi(store){
    }
    if(path==='/api/feedback'&&req.method==='GET')return reply(res,200,{reviews:db.prepare('SELECT r.comment,r.date,s.scenario,u.name instructor FROM reviews r JOIN submissions s ON s.id=r.submission_id JOIN users u ON u.id=r.instructor_id WHERE s.user_id=? ORDER BY r.date DESC').all(user.id)});
    if(!path.startsWith('/api/instructor/'))throw fail(404,'API route not found.');if(user.role!=='instructor')throw fail(403,'Instructor access required.');
+   if(path==='/api/instructor/resources'&&req.method==='POST'){
+    let resource;try{resource=validateResource(body);}catch(error){throw fail(400,error.message);}
+    if(body.id){const previous=db.prepare('SELECT owner FROM resources WHERE id=?').get(body.id);if(!previous||previous.owner!==user.id)throw fail(403,'Only the author can edit this resource.');}
+    const id=body.id||randomUUID(),date=new Date().toISOString(),reviewed=resource.review==='instructor-reviewed'?date:null;
+    db.prepare('INSERT INTO resources VALUES(?,?,?,?,?) ON CONFLICT(id) DO UPDATE SET data=excluded.data,reviewed=excluded.reviewed,updated=excluded.updated').run(id,user.id,JSON.stringify(resource),reviewed,date);return reply(res,200,{resource:{...resource,id,reviewed}});
+   }
    if(path==='/api/instructor/learners'&&req.method==='GET')return reply(res,200,{learners:db.prepare("SELECT id,name FROM users WHERE role='learner'").all()});
    if(path==='/api/instructor/assign'&&req.method==='POST'){
     if(!scenarios.some(s=>s.id===body.scenario)||!db.prepare("SELECT id FROM users WHERE id=? AND role='learner'").get(body.learner))throw fail(400,'Choose a learner and a valid exercise.');db.prepare('INSERT OR IGNORE INTO assignments VALUES(?,?,?,?,?)').run(randomUUID(),user.id,body.learner,body.scenario,new Date().toISOString());return reply(res,200,{ok:true});

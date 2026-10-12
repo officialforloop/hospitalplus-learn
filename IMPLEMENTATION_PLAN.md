@@ -64,4 +64,20 @@ These checks do not replace instructor review or real learner validation.
 - Instructor and learner accounts remain separate from the original guest history.
 - Browser learner sign-in confirmed delivery of the assigned exercise and demo instructor feedback; account layout inspected at 390px width.
 
-Next implementation phase: resource discovery, institution-specific review metadata, accessibility and multilingual access, informed by learner/instructor input. Account lifecycle and offline synchronization gaps remain explicit.
+## Completed: resource discovery and context metadata (milestone 4)
+
+- Searchable starter catalogue with three offline lessons and three publisher references.
+- Skill, language, institution, review-status and offline filters, explicit empty states and reset controls.
+- Visible source, context, access limits, recorded date, review status and reviewer/date where declared.
+- Instructor-created/edited institution links, validated HTTPS URLs, server ownership checks, and SQLite persistence. Institution links are shared across signed-in accounts on this local learning server.
+- Related lessons/practice connect resources to the existing pathway; general references remain visible when selecting an institution context.
+
+## Verification completed for milestone 4
+
+- 23 automated tests pass. Resource checks cover compound queries, combined filters, offline classification, language empty states, contextual inclusion, URL validation, instructor permission, author ownership and reviewer metadata.
+- Browser search `WHO handover` returned one reference; French filtering returned a truthful empty state.
+- Instructor saved a clearly labeled demo placement resource with review pending, and the form reset successfully.
+- Server stopped: cached library loaded and offline-only filtering returned three lessons. Mobile layout checked at 390px.
+- Publisher reference destinations checked on 12 October 2026. External content was linked, not copied.
+
+Pending: qualified content review, formal institution-specific pathways, real learner validation, reviewed multilingual resources and assistive-technology testing. Accessibility/multilingual work is the next implementation phase; account lifecycle and durable synchronization remain explicit gaps.

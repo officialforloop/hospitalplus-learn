@@ -12,3 +12,13 @@
 [hidden]{display:none!important}
 #account-link{font-size:12px}
 @media(max-width:700px){header{height:auto;min-height:65px;gap:10px;flex-wrap:wrap}.answer-text{max-width:60%}}
+.library-filters{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;align-items:end}
+.library-search{grid-column:1/-1}
+.offline-toggle{display:flex;align-items:center;gap:8px;font-weight:normal}
+.resource-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px;margin-bottom:28px}
+#resource-results{margin-top:28px}
+.resource-card h3{font-size:19px;margin-top:16px}
+.resource-card>p{font-size:13px;overflow-wrap:anywhere}
+.resource-editor{margin-top:28px}
+.resource-card .actions{margin-top:18px}
+@media(max-width:700px){.library-filters,.resource-grid{grid-template-columns:1fr}}

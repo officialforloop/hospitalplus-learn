@@ -28,6 +28,14 @@ test('account authorization, progress isolation, assignments and review lifecycl
   assert.equal((await call('/api/submissions','POST',submission,b.cookie)).status,409);
   const work=await call('/api/instructor/submissions','GET',undefined,teacher.cookie);assert.equal(work.data.submissions.length,1);
   const other=await call('/api/login','POST',{name:'otherinstructor',password:'InstructorTest123!'});assert.equal((await call('/api/instructor/submissions','GET',undefined,other.cookie)).data.submissions.length,0);assert.equal((await call('/api/instructor/review','POST',{submission:submission.id,comment:'Unassigned review'},other.cookie)).status,403);
+  const resource={title:'Local learning reference',description:'Institution guide for practice',publisher:'Test institution',institution:'Test programme',context:'Fictional test resource metadata.',skill:'notes',language:'English',review:'pending',url:'https://example.org/guide'};
+  assert.equal((await call('/api/instructor/resources','POST',resource,a.cookie)).status,403);
+  const created=await call('/api/instructor/resources','POST',resource,teacher.cookie);assert.equal(created.status,200);assert.equal(created.data.resource.reviewed,null);
+  assert.equal((await call('/api/resources')).data.resources.length,0);
+  assert.equal((await call('/api/resources','GET',undefined,a.cookie)).data.resources.length,1);
+  assert.equal((await call('/api/instructor/resources','POST',{...resource,id:created.data.resource.id},other.cookie)).status,403);
+  const reviewed=await call('/api/instructor/resources','POST',{...resource,id:created.data.resource.id,review:'instructor-reviewed'},teacher.cookie);assert.equal(reviewed.status,200);assert.ok(reviewed.data.resource.reviewed);
+  const listed=(await call('/api/resources','GET',undefined,a.cookie)).data.resources[0];assert.equal(listed.reviewer,'instructor');assert.equal(listed.institution,'Test programme');
   assert.equal((await call('/api/instructor/review','POST',{submission:submission.id,comment:'Keep reported and observed facts distinct.'},teacher.cookie)).status,200);
   assert.equal((await call('/api/feedback','GET',undefined,a.cookie)).data.reviews.length,1);
   assert.equal((await call('/api/feedback','GET',undefined,b.cookie)).data.reviews.length,0);

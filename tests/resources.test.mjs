@@ -1,0 +1,10 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {catalogue,filterResources,validateResource} from '../public/resources.js';
+const input={title:'Local documentation guide',description:'A guide for placement preparation',publisher:'Training institution',institution:'Example programme',context:'Fictional metadata for tests; approval pending.',skill:'notes',language:'English',review:'pending',url:'https://example.org/guide'};
+test('search matches publisher and topic using all search terms',()=>{assert.equal(filterResources(catalogue,{query:'WHO handover'}).length,1);assert.equal(filterResources(catalogue,{query:'WHO vitals'}).length,0);});
+test('offline filter excludes external references',()=>assert.equal(filterResources(catalogue,{offline:true}).length,3));
+test('language filter does not invent translated resources',()=>assert.equal(filterResources(catalogue,{language:'French'}).length,0));
+test('institution context includes matching local material and general resources only',()=>{const items=[...catalogue,{...input,id:'a',format:'Institution link'}, {...input,id:'b',institution:'Other programme'}];assert.equal(filterResources(items,{institution:'Example programme'}).length,catalogue.length+1);});
+test('combined skill, review, and offline filters return a specific lesson',()=>{const result=filterResources(catalogue,{skill:'notes',review:'pending',offline:true});assert.equal(result.length,1);assert.equal(result[0].id,'lesson-notes');});
+test('resource validation rejects script, embedded credentials and unsupported review claims',()=>{for(const url of ['javascript:alert(1)','http://example.org','https://password:secret@example.org'])assert.throws(()=>validateResource({...input,url}));assert.throws(()=>validateResource({...input,review:'certified'}));assert.throws(()=>validateResource({...input,language:'Invented'}));assert.equal(validateResource(input).review,'pending');});

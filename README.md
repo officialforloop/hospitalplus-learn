@@ -39,6 +39,14 @@ Offline guest use requires a successful initial load and service-worker installa
 
 The three lessons, scenarios, and rubrics await qualified instructor review. Checklists assess source-fact selections, transcription accuracy, and free-text presence, not clinical reasoning, free-text meaning, or note quality. Instructor review tools are implemented; demo feedback is not educator approval. There are no real patient records, clinical recommendations, or certifications. Institution-specific content, reviewed translations, consent-based external sharing, and real learner validation remain future work. Feedback currently stores one latest review per submission.
 
+## Resource library (milestone 4)
+
+Open `#resources` to search six starter entries by title, topic, publisher and context, and filter by skill, language, review status, institution and offline availability. Three entries are the cached learning lessons; three link to verified publisher pages (NMC, WHO and OpenLearn). No external article/course content is redistributed. Publisher references are not institution-approved lessons, and language filtering does not translate content.
+
+Signed-in instructors can add and edit their own resource metadata: source URL, publisher, related skill, language, institutional context, local relevance and review status. Institution links are visible to all signed-in accounts on this local learning server. A declared review records the instructor username and date; the application does not independently verify their qualifications or approve a curriculum. The demo placement entry remains pending review.
+
+Institution filtering includes that context’s resources alongside general references. Related-practice links connect discovery to the existing three-exercise pathway. Formal institution-specific curricula and qualified approval remain pending. Guest/offline use includes starter metadata and cached lessons, while instructor-curated metadata and external pages need connectivity.
+
 ## Initial proof of concept
 
 - Three fictional outpatient scenarios covering observations, documentation, and handover.
