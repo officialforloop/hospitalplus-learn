@@ -43,9 +43,9 @@ Paths below are relative to this learning repository.
 | Lesson / resource access | Three draft lessons with rubrics, review status, external reading link, and downloadable exercise packs. | Qualified instructor review, local curriculum alignment, resource library/search and licensing review. |
 | Practice lab | Three fictional scenarios: measurements, traceable notes and structured handover; `public/scenarios.js` defines source facts and draft rubrics. | Educator approval and review of free-text quality; additional local cases after validation. |
 | Feedback / retry | Deterministic scenario-specific assessment (7, 8, and 7 checks); browser verified notes 8/8 and handover 7/7. Next-step suggestions remain optional. | Instructor assessment of clinical/documentation quality; richer approved feedback. |
-| Drafts / portfolio | Separate local drafts and lesson state, migration from version 1, validated recent 50 attempts, JSON/text portfolio exports; reload verified. | Authenticated persistence, sharing controls and cross-device synchronization. |
+| Drafts / portfolio | Separate guest drafts; account progress persists to isolated SQLite with revision checks; explicit guest import, recent 50 summaries, JSON/text exports. Reviewable submissions are scored separately on the server. | External sharing consent, durable offline account queues, automatic conflict merging and hosting for physical-device access. |
 | Offline access | Service worker caches core screens; downloaded lesson; unavailable-server reload verified. | Version/update lifecycle testing, synchronization/conflicts after server storage is introduced. No server synchronization exists today. |
-| Learner / instructor accounts | Not implemented; demo learner label only. | Authentication, server permissions, separate database, assignments, comments and account recovery. |
+| Learner / instructor accounts | Milestone 3: registration/sign-in, scrypt password hashes, expiring HttpOnly sessions, separate SQLite database; server-enforced roles; provisioned instructor assignment/review tools and learner feedback. Account HTTP isolation/authorization tests pass. | Recovery/deletion, HTTPS hosting, external sharing consent, account lifecycle validation and institutional governance. Demo comments are not educator approval. |
 | Multilingual content | Not implemented; English only. | Learner-selected languages, reviewed translations and localization. |
 | Validation / opportunity | 15 behavior tests and browser checks recorded in `IMPLEMENTATION_PLAN.md`. Version-2 offline loading and readable export verified. Portfolio suggests instructor follow-up. | Student interviews, educator review, learner pilot, placement partnerships and real opportunity guidance. No certification. |
 
@@ -54,7 +54,7 @@ Paths below are relative to this learning repository.
 1. Review V2 privileged server actions, dispensing atomicity/clearance, and sample stock seeding before calling those modules operationally complete.
 2. Trace and verify one V2 outpatient journey against real test data, including alternate HMO and failure paths.
 3. Validate all three implemented Learn scenarios and draft rubrics with an instructor and learners; preserve the same theme during revisions.
-4. Build Learn accounts/instructor review with isolated training storage, then synchronization and multilingual content.
+4. Accounts/instructor review now exist with isolated training storage. Next address account lifecycle, durable synchronization and multilingual content; preserve existing role and ownership checks.
 5. Treat partner referrals, biometrics, local AI, external integrations, automatic vacancy calling and broader analytics as distinct scoped work items.
 
 Keep this document current: name changed files, describe actual behavior, record checks performed, and leave unverified requirements explicit. Do not convert this source inventory into a blanket completion claim.

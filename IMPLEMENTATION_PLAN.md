@@ -23,9 +23,11 @@
 
 Interview three to five learners and an instructor. Confirm priority skills and review all three draft lessons and rubrics. The documentation and handover exercises are implemented, but clinical quality requires qualified review. Retain flexible access and untimed retries.
 
-## Then: accounts and instructor support
+## Completed: accounts and instructor support (milestone 3)
 
-Introduce server-enforced learner and instructor roles, a separate training database, lesson assignment, instructor comments, and consent-based portfolio sharing. Replace browser-only state with authenticated storage and design offline synchronization, conflict handling, and duplicate-submission prevention before claiming cross-device support.
+Learner registration/sign-in, provisioned instructors, hashed passwords, expiring cookie sessions, separate SQLite training storage, server progress, assignments, instructor comments, and account review screens are implemented. Source-fact scoring runs on the server for reviewable submissions. Guest practice remains separate and import is explicit. Revisions prevent silent overwrite; submission identifiers support idempotent retries within the current page session.
+
+Pending: consent-based external portfolio sharing, durable offline account queues, automatic conflict resolution, account recovery/deletion, and HTTPS hosting for access across physical devices. Unsent account edits remain in memory; export before closing if save is pending.
 
 ## Then: local relevance and inclusion
 
@@ -52,4 +54,14 @@ Instructor review, screen-reader testing, multilingual validation, and a real le
 - With the HTTP server stopped, portfolio reload and handover navigation worked using the version-2 cache.
 - New handover form visually checked at 390px width; existing visual theme retained.
 
-These checks do not replace instructor review or real learner validation. Accounts and instructor support are the next implementation milestone.
+These checks do not replace instructor review or real learner validation.
+
+## Verification completed for milestone 3
+
+- 17 automated tests pass, including HTTP tests for unauthorized access, learner isolation, forced learner registration, same-origin mutation checks, revision conflict detection, server scoring, duplicate submission identifiers, assigned-instructor access, feedback visibility and logout.
+- SQLite reopen test verifies hashed credentials and persisted progress.
+- Browser: create a learner, submit supplied vitals (7/7), sign out, sign in as a locally provisioned instructor, assign the exercise, inspect source answers and save demo feedback.
+- Instructor and learner accounts remain separate from the original guest history.
+- Browser learner sign-in confirmed delivery of the assigned exercise and demo instructor feedback; account layout inspected at 390px width.
+
+Next implementation phase: resource discovery, institution-specific review metadata, accessibility and multilingual access, informed by learner/instructor input. Account lifecycle and offline synchronization gaps remain explicit.

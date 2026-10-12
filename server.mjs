@@ -2,10 +2,16 @@ import http from 'node:http';
 import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
+import {mkdirSync} from 'node:fs';
+import {createStore,createApi} from './backend.mjs';
+const dataRoot=fileURLToPath(new URL('./data/',import.meta.url));mkdirSync(dataRoot,{recursive:true});
+const api=createApi(createStore(path.join(dataRoot,'learn.sqlite')));
 const root = path.resolve(fileURLToPath(new URL('./public/', import.meta.url)));
 const mime = { '.html':'text/html', '.css':'text/css', '.js':'text/javascript', '.json':'application/json', '.webmanifest':'application/manifest+json' };
 http.createServer(async (req,res) => {
   try {
+    const url=new URL(req.url,'http://localhost');
+    if(url.pathname.startsWith('/api/'))return await api(req,res,url);
     const pathname = decodeURIComponent(new URL(req.url, 'http://localhost').pathname);
     const target = path.resolve(root, '.' + (pathname === '/' ? '/index.html' : pathname));
     if (!target.startsWith(root + path.sep)) { res.writeHead(403); return res.end('Forbidden'); }

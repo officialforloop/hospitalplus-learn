@@ -1,0 +1,37 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import http from 'node:http';
+import {createStore,createApi} from '../backend.mjs';
+import {blankProgress} from '../public/scenarios.js';
+import {randomUUID} from 'node:crypto';
+import {mkdtempSync,rmSync} from 'node:fs';
+import {tmpdir} from 'node:os';
+import path from 'node:path';
+test('account authorization, progress isolation, assignments and review lifecycle',async()=>{
+ const store=createStore(':memory:');store.createUser('instructor','InstructorTest123!','instructor');store.createUser('otherinstructor','InstructorTest123!','instructor');
+ const api=createApi(store);const server=http.createServer((req,res)=>api(req,res,new URL(req.url,'http://localhost')));await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));const base=`http://127.0.0.1:${server.address().port}`;
+ const call=async(path,method='GET',body,cookie='',origin=base)=>{const response=await fetch(base+path,{method,headers:{...(body?{'Content-Type':'application/json'}:{}),...(cookie?{Cookie:cookie}:{}),Origin:origin},body:body?JSON.stringify(body):undefined});return {status:response.status,data:await response.json(),cookie:response.headers.get('set-cookie')?.split(';')[0]};};
+ try{
+  assert.equal((await call('/api/progress')).status,401);
+  const a=await call('/api/register','POST',{name:'learnerA',password:'LearnerTest123!',role:'instructor'});assert.equal(a.data.user.role,'learner');
+  const b=await call('/api/register','POST',{name:'learnerB',password:'LearnerTest123!'});
+  assert.equal((await call('/api/instructor/learners','GET',undefined,a.cookie)).status,403);
+  assert.equal((await call('/api/progress','PUT',{progress:blankProgress(),revision:0},a.cookie,'http://evil.example')).status,403);
+  const progress=blankProgress();progress.lessons.notes=true;assert.equal((await call('/api/progress','PUT',{progress,revision:0},a.cookie)).status,200);
+  assert.equal((await call('/api/progress','GET',undefined,b.cookie)).data.progress.lessons.notes,false);
+  assert.equal((await call('/api/progress','PUT',{progress,revision:0},a.cookie)).status,409);
+  const teacher=await call('/api/login','POST',{name:'instructor',password:'InstructorTest123!'});
+  assert.equal((await call('/api/instructor/assign','POST',{learner:a.data.user.id,scenario:'notes'},teacher.cookie)).status,200);
+  const submission={id:randomUUID(),scenario:'notes',answers:{record:'HPL-DEMO-002',time:'09:15'}};
+  const first=await call('/api/submissions','POST',submission,a.cookie);assert.equal(first.status,201);assert.equal(first.data.result.score,2);
+  assert.equal((await call('/api/submissions','POST',submission,a.cookie)).status,200);
+  assert.equal((await call('/api/submissions','POST',submission,b.cookie)).status,409);
+  const work=await call('/api/instructor/submissions','GET',undefined,teacher.cookie);assert.equal(work.data.submissions.length,1);
+  const other=await call('/api/login','POST',{name:'otherinstructor',password:'InstructorTest123!'});assert.equal((await call('/api/instructor/submissions','GET',undefined,other.cookie)).data.submissions.length,0);assert.equal((await call('/api/instructor/review','POST',{submission:submission.id,comment:'Unassigned review'},other.cookie)).status,403);
+  assert.equal((await call('/api/instructor/review','POST',{submission:submission.id,comment:'Keep reported and observed facts distinct.'},teacher.cookie)).status,200);
+  assert.equal((await call('/api/feedback','GET',undefined,a.cookie)).data.reviews.length,1);
+  assert.equal((await call('/api/feedback','GET',undefined,b.cookie)).data.reviews.length,0);
+  assert.equal((await call('/api/logout','POST',{},a.cookie)).status,200);assert.equal((await call('/api/progress','GET',undefined,a.cookie)).status,401);
+ }finally{await new Promise(resolve=>server.close(resolve));store.db.close();}
+});
+test('password hashes and progress persist across database reopening',()=>{const directory=mkdtempSync(path.join(tmpdir(),'hpl-test-'));const filename=path.join(directory,'test.sqlite');let store;try{store=createStore(filename);const user=store.createUser('privateuser','StrongTestPassword!');const stored=store.db.prepare('SELECT * FROM users WHERE id=?').get(user.id);assert.notEqual(stored.hash,'StrongTestPassword!');assert.equal(store.authenticate('privateuser','bad'),null);const progress=blankProgress();progress.lessons.handover=true;store.db.prepare('INSERT INTO progress VALUES(?,?,?)').run(user.id,JSON.stringify(progress),1);store.db.close();store=createStore(filename);assert.equal(store.authenticate('privateuser','StrongTestPassword!').id,user.id);assert.equal(store.progress(user.id).progress.lessons.handover,true);}finally{store?.db.close();rmSync(directory,{recursive:true,force:true});}});

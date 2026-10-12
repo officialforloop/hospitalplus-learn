@@ -35,14 +35,14 @@ The visual source of truth is `public/styles.css`. Reuse `public/index.html` for
 
 ## Behavior and architecture
 
-- Current stack: buildless HTML/CSS/JavaScript with a Node static server; no third-party runtime dependencies. Run `npm start` at port 3100 and `npm test` for checks.
+- Current stack: buildless HTML/CSS/JavaScript and a Node 24 server with built-in SQLite; no third-party runtime dependencies. Run `npm start` at port 3100 and `npm test` for checks. Training database files belong in ignored `data/`.
 - Do not imply authentication, instructor approval, a database, cross-device synchronization, or professional certification when these are absent.
 - Store only fictional exercise work locally. Preserve draft recovery, explicit storage-failure messages, retries, and voluntary exports. History currently retains 50 recent attempts.
 - Escape learner content before rendering HTML. Validate stored data and handle blocked/corrupted storage. Future server features must enforce authorization independently of the UI.
 - Keep lesson attribution and review status visible. Current content is draft material awaiting instructor review; external reading is not endorsement or a local curriculum standard.
 - Checklist scoring covers supplied measurements, selected source facts, record/time transcription, and free-text presence. Do not claim it assesses clinical reasoning, free-text meaning, or note quality. Keep each scenario’s rubric and assessment limits visible.
 - Avoid external assets needed for core learning. For new offline screens/assets, update `public/sw.js` and its versioned cache together; verify first-load installation and subsequent unavailable-server loading.
-- Accounts, additional scenarios, instructor review, translations, and synchronization belong to subsequent milestones. Implement required data protections and real behavior before showing them as available.
+- Learner accounts, assignment/review tools, server submissions and revision-checked progress are implemented in milestone 3. Preserve server role checks, learner ownership, assignment-scoped review, password hashing, same-origin mutation protection and API no-store behavior. Never cache authenticated API responses in the service worker. Durable offline account queues, account recovery, translations, and deployed multi-device access remain future work.
 
 ## Before finishing a module
 

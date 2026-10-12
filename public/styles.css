@@ -7,3 +7,8 @@
 .source-facts{padding-left:20px;font-size:13px;color:#52665d}
 .source-facts li{margin:12px 0}
 @media(max-width:700px){.scenario-tabs{display:grid;grid-template-columns:1fr}.structured-label select{max-width:100%}}
+.workspace-heading{margin-top:30px}
+.answer-text{white-space:pre-wrap;overflow-wrap:anywhere;font-weight:normal;font-size:12px;max-width:65%}
+[hidden]{display:none!important}
+#account-link{font-size:12px}
+@media(max-width:700px){header{height:auto;min-height:65px;gap:10px;flex-wrap:wrap}.answer-text{max-width:60%}}

@@ -19,7 +19,7 @@ Milestones 1 and 2 are implemented as a dependency-free browser prototype: three
 
 ## Run locally
 
-Requires Node.js 20 or later. From this folder:
+Requires Node.js 24 or later (built-in SQLite). From this folder:
 
 ```sh
 npm start
@@ -29,9 +29,15 @@ Open http://localhost:3100. Run automated checks with `npm test`.
 
 ## Prototype limitations
 
-This version uses a demo learner without sign-in or server storage. Progress is saved only in the current browser on the current device; it does not synchronize across devices. Up to 50 recent attempts are retained. Export your portfolio before clearing local data. Offline use requires a successful initial load and service-worker installation; external reading links still require internet access.
+Guest practice remains device-local. Milestone 3 adds learner registration/sign-in, server progress, exercise submissions, instructor assignments and feedback. Training data is stored in `data/learn.sqlite`, ignored by Git and separate from HospitalPlus V2. Passwords are scrypt-hashed; sessions use HttpOnly/SameSite cookies and expire after eight hours. Sessions are lost on server restart; account records remain.
 
-The three lessons, scenarios, and rubrics await qualified instructor review. Checklists assess source-fact selections, transcription accuracy, and free-text presence, not clinical reasoning, free-text meaning, or note quality. There are no real patient records, instructor accounts, clinical recommendations, or certifications. Accounts, instructor review, institution-specific content, and reviewed translations are future milestones.
+Create an instructor locally with `node scripts/create-instructor.mjs your_username`. The command prints a random password once; keep it private. Public registration always creates a learner regardless of requested role. Instructors see submissions only for learner/exercise pairs they assigned. Guest-imported summaries are not instructor-reviewable submissions; submit while signed in for review.
+
+Up to 50 recent progress summaries are retained; reviewable submissions remain in the training database. Guest imports are explicit replacements of account progress. Account saves use revision checks; conflicts stop saving and ask you to export your draft and reload account progress. Failed account saves remain in memory, with a Retry save action. Do not close or reload before saving or exporting unsaved work. Offline durable account queues, automated merges, password recovery, account deletion and HTTPS deployment are not implemented. The local server listens only on loopback, so account access across physical devices requires a future hosting setup.
+
+Offline guest use requires a successful initial load and service-worker installation; account APIs and external reading links require the server/internet as applicable. Authenticated API responses are excluded from service-worker caching.
+
+The three lessons, scenarios, and rubrics await qualified instructor review. Checklists assess source-fact selections, transcription accuracy, and free-text presence, not clinical reasoning, free-text meaning, or note quality. Instructor review tools are implemented; demo feedback is not educator approval. There are no real patient records, clinical recommendations, or certifications. Institution-specific content, reviewed translations, consent-based external sharing, and real learner validation remain future work. Feedback currently stores one latest review per submission.
 
 ## Initial proof of concept
 
