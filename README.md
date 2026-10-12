@@ -15,7 +15,23 @@ A separate training environment would keep fictional scenarios apart from live p
 
 ## Project status
 
-This repository currently contains the project proposal and initial implementation scope. The learning application has not yet been implemented.
+Milestone 1 is implemented as a dependency-free browser prototype: dashboard, documentation lesson, fictional observation exercise, checklist feedback, retries, automatic device-local drafts, progress portfolio, and downloads. A service worker caches the learning screens for offline access after the first successful online visit.
+
+## Run locally
+
+Requires Node.js 20 or later. From this folder:
+
+```sh
+npm start
+```
+
+Open http://localhost:3100. Run automated checks with `npm test`.
+
+## Prototype limitations
+
+This version uses a demo learner without sign-in or server storage. Progress is saved only in the current browser on the current device; it does not synchronize across devices. Up to 50 recent attempts are retained. Export your portfolio before clearing local data. Offline use requires a successful initial load and service-worker installation; external reading links still require internet access.
+
+The original lesson and scenario await qualified instructor review. The checklist checks transcription accuracy and note presence, not clinical reasoning or note quality. There are no real patient records, instructor accounts, clinical recommendations, or certifications. Accounts, additional scenarios, instructor review, institution-specific content, and reviewed translations are future milestones.
 
 ## Initial proof of concept
 

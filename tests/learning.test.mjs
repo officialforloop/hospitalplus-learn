@@ -1,0 +1,10 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {fields,assess,parseSaved} from '../public/learning.js';
+const correct=Object.fromEntries(fields.map(f=>[f.key,f.value]));
+test('blank entries do not pass transcription checks',()=>assert.equal(assess({}).score,0));
+test('supplied measurements and a note pass all seven checks',()=>assert.equal(assess({...correct,note:'Supplied observations recorded.'}).score,7));
+test('a transcription error receives focused feedback',()=>{const result=assess({...correct,pulse:'28',note:'Recorded.'});assert.equal(result.score,6);assert.equal(result.results.find(r=>r.label==='Pulse').pass,false);});
+test('whitespace does not count as an observation note',()=>assert.equal(assess({...correct,note:'   '}).score,6));
+test('corrupted and incompatible stored progress recovers safely',()=>{assert.equal(parseSaved('{broken'),null);assert.equal(parseSaved('{"version":2}'),null);});
+test('stored data filters invalid attempts and limits retained history',()=>{const value=parseSaved(JSON.stringify({version:1,draft:{note:'a'},attempts:[{score:99,date:'x'},...Array.from({length:60},()=>({score:6,date:'2026-10-12T12:00:00Z'}))]}));assert.equal(value.attempts.length,50);assert.equal(value.draft.note,'a');});
