@@ -1,0 +1,14 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {assessStructured,blankProgress,scenarios,nextScenario} from '../public/scenarios.js';
+import {parseSaved} from '../public/learning.js';
+const answers=id=>Object.fromEntries(scenarios.find(s=>s.id===id).fields.map(f=>[f.key,f.expected||'Fictional learner reflection.']));
+test('blank notes and handover do not pass any checks',()=>{assert.equal(assessStructured('notes',{}).score,0);assert.equal(assessStructured('handover',{}).score,0);});
+test('notes check all eight source and presence fields',()=>assert.equal(assessStructured('notes',answers('notes')).score,8));
+test('handover checks all seven source and presence fields',()=>assert.equal(assessStructured('handover',answers('handover')).score,7));
+test('wrong record and invented action produce specific failed checks',()=>{const result=assessStructured('notes',{...answers('notes'),record:'HPL-DEMO-003',action:'medication'});assert.equal(result.score,6);assert.equal(result.results[0].pass,false);assert.equal(result.results[4].pass,false);});
+test('empty free text is not credited',()=>assert.equal(assessStructured('handover',{...answers('handover'),message:'   '}).score,6));
+test('legacy vitals progress migrates without mixing scenarios',()=>{const result=parseSaved(JSON.stringify({version:1,lessonRead:true,draft:{pulse:'82',note:'Saved note'},attempts:[{date:'2026-10-12T12:00:00Z',score:7}]}));assert.equal(result.version,2);assert.equal(result.drafts.vitals.pulse,'82');assert.equal(result.lessons.vitals,true);assert.equal(result.lessons.notes,false);assert.equal(result.attempts[0].scenario,'vitals');});
+test('independent drafts and lessons survive round-trip',()=>{const progress=blankProgress();progress.drafts.notes=answers('notes');progress.drafts.handover=answers('handover');progress.lessons.notes=true;const restored=parseSaved(JSON.stringify(progress));assert.equal(restored.drafts.notes.record,'HPL-DEMO-002');assert.equal(restored.drafts.handover.record,'HPL-DEMO-003');assert.equal(restored.lessons.handover,false);});
+test('invalid scenarios, totals, dates and scores are discarded',()=>{const progress=blankProgress();progress.attempts=[{scenario:'notes',date:'invalid',score:8,total:8},{scenario:'other',date:'2026-10-12',score:7,total:7},{scenario:'notes',date:'2026-10-12',score:9,total:8},{scenario:'notes',date:'2026-10-12',score:7,total:7}];assert.equal(parseSaved(JSON.stringify(progress)).attempts.length,0);});
+test('suggestion advances per scenario and reaches instructor review',()=>{const progress=blankProgress();assert.equal(nextScenario(progress).id,'vitals');progress.attempts=[{scenario:'vitals',score:7,total:7}];assert.equal(nextScenario(progress).id,'notes');progress.attempts.push({scenario:'notes',score:8,total:8},{scenario:'handover',score:7,total:7});assert.equal(nextScenario(progress),null);});

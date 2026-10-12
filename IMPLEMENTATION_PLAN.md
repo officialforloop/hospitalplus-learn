@@ -10,9 +10,18 @@
 - Downloadable lesson and paper exercise.
 - Cached application shell for offline use after first successful visit.
 
-## Next: validate content and expand practice
+## Completed: expanded practice (milestone 2)
 
-Interview three to five learners and an instructor. Confirm priority skills and review the current lesson and checklist. Add observation-note and structured-handover scenarios with explicit assessment rubrics. Retain flexible access and untimed retries.
+- Three independent lessons and fictional scenarios: measurements, traceable documentation, and structured handover.
+- Visible draft rubrics, source sheets, and explicit assessment limits.
+- Scenario-specific drafts, lesson-read state, attempt history, and suggested next lesson without access restrictions.
+- Migration of existing vitals drafts, lesson status, and attempts into version-2 progress.
+- Downloadable lesson/exercise packs for each scenario and JSON/text portfolio exports.
+- Version-2 offline cache including the new scenario module.
+
+## Pending: learner and instructor validation
+
+Interview three to five learners and an instructor. Confirm priority skills and review all three draft lessons and rubrics. The documentation and handover exercises are implemented, but clinical quality requires qualified review. Retain flexible access and untimed retries.
 
 ## Then: accounts and instructor support
 
@@ -34,3 +43,13 @@ Measure task completion, omissions, resource discovery, repeat participation, an
 - Desktop and 390px mobile layout visually inspected.
 
 Instructor review, screen-reader testing, multilingual validation, and a real learner pilot remain outstanding. This milestone has no authentication or server synchronization.
+
+## Verification completed for milestone 2
+
+- 15 automated tests pass, covering source-fact checks, missing fields, focused errors, migration, separate drafts, invalid history entries, and next-step suggestions.
+- Browser: original 6/7 and 7/7 vitals history retained; notes submitted at 8/8; handover submitted at 7/7; all attempts and drafts retained after reload.
+- Readable portfolio downloaded successfully through the browser.
+- With the HTTP server stopped, portfolio reload and handover navigation worked using the version-2 cache.
+- New handover form visually checked at 390px width; existing visual theme retained.
+
+These checks do not replace instructor review or real learner validation. Accounts and instructor support are the next implementation milestone.

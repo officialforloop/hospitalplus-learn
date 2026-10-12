@@ -15,7 +15,7 @@ A separate training environment would keep fictional scenarios apart from live p
 
 ## Project status
 
-Milestone 1 is implemented as a dependency-free browser prototype: dashboard, documentation lesson, fictional observation exercise, checklist feedback, retries, automatic device-local drafts, progress portfolio, and downloads. A service worker caches the learning screens for offline access after the first successful online visit.
+Milestones 1 and 2 are implemented as a dependency-free browser prototype: three lessons and fictional exercises (observations, traceable documentation, structured handover), scenario-specific checklist feedback and retries, separate device-local drafts, suggested next steps, progress portfolio, and downloads. Existing milestone-1 progress migrates automatically. A versioned service worker caches all learning screens for offline access after the first successful online visit.
 
 ## Run locally
 
@@ -31,7 +31,7 @@ Open http://localhost:3100. Run automated checks with `npm test`.
 
 This version uses a demo learner without sign-in or server storage. Progress is saved only in the current browser on the current device; it does not synchronize across devices. Up to 50 recent attempts are retained. Export your portfolio before clearing local data. Offline use requires a successful initial load and service-worker installation; external reading links still require internet access.
 
-The original lesson and scenario await qualified instructor review. The checklist checks transcription accuracy and note presence, not clinical reasoning or note quality. There are no real patient records, instructor accounts, clinical recommendations, or certifications. Accounts, additional scenarios, instructor review, institution-specific content, and reviewed translations are future milestones.
+The three lessons, scenarios, and rubrics await qualified instructor review. Checklists assess source-fact selections, transcription accuracy, and free-text presence, not clinical reasoning, free-text meaning, or note quality. There are no real patient records, instructor accounts, clinical recommendations, or certifications. Accounts, instructor review, institution-specific content, and reviewed translations are future milestones.
 
 ## Initial proof of concept
 
