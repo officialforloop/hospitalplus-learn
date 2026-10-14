@@ -9,7 +9,10 @@ export function createStore(filename){
  const createUser=(name,password,role='learner')=>{const id=randomUUID(),salt=randomBytes(16).toString('hex');db.prepare('INSERT INTO users VALUES(?,?,?,?,?)').run(id,name,role,salt,scryptSync(password,salt,64).toString('hex'));return {id,name,role};};
  const authenticate=(name,password)=>{const user=db.prepare('SELECT * FROM users WHERE name=?').get(name);const salt=user?.salt||'invalid-account';const hash=scryptSync(password,salt,64);return user&&timingSafeEqual(hash,Buffer.from(user.hash,'hex'))?{id:user.id,name:user.name,role:user.role}:null;};
  const progress=id=>{const row=db.prepare('SELECT * FROM progress WHERE user_id=?').get(id);return row?{progress:JSON.parse(row.data),revision:row.revision}:{progress:blankProgress(),revision:0};};
- return {db,createUser,authenticate,progress};
+ const setPassword=(id,password)=>{if(typeof password!=='string'||password.length<10||password.length>128)throw new Error('Use a 10–128 character password.');const salt=randomBytes(16).toString('hex');const changed=db.prepare('UPDATE users SET salt=?,hash=? WHERE id=?').run(salt,scryptSync(password,salt,64).toString('hex'),id);if(changed.changes!==1)throw new Error('Account not found.');};
+ const deleteLearner=id=>{db.exec('BEGIN IMMEDIATE');try{const person=db.prepare('SELECT role FROM users WHERE id=?').get(id);if(person?.role!=='learner')throw new Error('Only learner accounts can be deleted here.');db.prepare('DELETE FROM reviews WHERE submission_id IN (SELECT id FROM submissions WHERE user_id=?)').run(id);db.prepare('DELETE FROM assignments WHERE learner_id=?').run(id);db.prepare('DELETE FROM submissions WHERE user_id=?').run(id);db.prepare('DELETE FROM progress WHERE user_id=?').run(id);db.prepare('DELETE FROM users WHERE id=?').run(id);db.exec('COMMIT');}catch(error){db.exec('ROLLBACK');throw error;}};
+ const exportAccount=user=>({version:1,exported:new Date().toISOString(),notice:'Fictional training account data. Not certification. Does not include credentials, browser-local guest progress, preferences or pilot records.',user:{id:user.id,name:user.name,role:user.role},...progress(user.id),submissions:db.prepare('SELECT id,scenario,answers,result,date FROM submissions WHERE user_id=? ORDER BY date').all(user.id).map(s=>({...s,answers:JSON.parse(s.answers),result:JSON.parse(s.result)})),assignments:db.prepare('SELECT * FROM assignments WHERE learner_id=? OR instructor_id=?').all(user.id,user.id),reviews:db.prepare('SELECT r.* FROM reviews r JOIN submissions s ON s.id=r.submission_id WHERE s.user_id=? OR r.instructor_id=?').all(user.id,user.id),resources:db.prepare('SELECT id,data,reviewed,updated FROM resources WHERE owner=?').all(user.id).map(r=>({...r,data:JSON.parse(r.data)}))});
+ return {db,createUser,authenticate,progress,setPassword,deleteLearner,exportAccount};
 }
 export function createApi(store){
  const {db}=store;const sessions=new Map(),failures=new Map();
@@ -21,6 +24,7 @@ export function createApi(store){
    let body={};if(req.method!=='GET'){let text='';for await(const chunk of req){text+=chunk;if(text.length>300000)throw fail(413,'Request too large.');}try{body=JSON.parse(text||'{}');}catch{throw fail(400,'Invalid JSON.');}}
    if(!body||typeof body!=='object'||Array.isArray(body))throw fail(400,'Expected a JSON object.');
    const path=url.pathname;const token=(req.headers.cookie||'').match(/(?:^|;\s*)hpl_session=([a-f0-9]+)/)?.[1];let session=sessions.get(token);if(session&&session.expires<Date.now()){sessions.delete(token);session=null;}
+   if(session){const current=db.prepare('SELECT id,name,role,hash FROM users WHERE id=?').get(session.user.id);if(!current||current.hash!==session.credentialHash){sessions.delete(token);session=null;}else session.user={id:current.id,name:current.name,role:current.role};}
    if(path==='/api/session'&&req.method==='GET')return reply(res,200,{user:session?.user||null});
    if(path==='/api/resources'&&req.method==='GET')return reply(res,200,{resources:session?db.prepare('SELECT r.*,u.name reviewer FROM resources r JOIN users u ON u.id=r.owner ORDER BY r.updated DESC').all().map(r=>({...JSON.parse(r.data),id:r.id,owner:r.owner,reviewer:r.reviewed?r.reviewer:null,reviewed:r.reviewed,checked:r.updated.slice(0,10),format:'Institution link',offline:false})):[]});
    if(['/api/register','/api/login'].includes(path)&&req.method==='POST'){
@@ -29,9 +33,21 @@ export function createApi(store){
     let user;
     if(path==='/api/register'){try{user=store.createUser(body.name,body.password);}catch{throw fail(409,'Username is unavailable.');}}
     else{user=store.authenticate(body.name,body.password);if(!user){failures.set(bucket,{count:rate.until>Date.now()?rate.count+1:1,until:Date.now()+900000});throw fail(401,'Incorrect username or password.');}}
-    failures.delete(bucket);const id=randomBytes(32).toString('hex');sessions.set(id,{user,expires:Date.now()+8*3600000});return reply(res,200,{user},{'Set-Cookie':`hpl_session=${id}; HttpOnly; SameSite=Strict; Path=/; Max-Age=28800`});
+    failures.delete(bucket);const id=randomBytes(32).toString('hex');sessions.set(id,{user,credentialHash:db.prepare('SELECT hash FROM users WHERE id=?').get(user.id).hash,expires:Date.now()+8*3600000});return reply(res,200,{user},{'Set-Cookie':`hpl_session=${id}; HttpOnly; SameSite=Strict; Path=/; Max-Age=28800`});
    }
    if(!session)throw fail(401,'Sign in to continue.');const user=session.user;
+   if(path==='/api/account/export'&&req.method==='GET')return reply(res,200,store.exportAccount(user),{'Content-Disposition':'attachment; filename="hospitalplus-learn-account.json"'});
+   if((path==='/api/account/password'&&req.method==='POST')||(path==='/api/account'&&req.method==='DELETE')){
+    if(path==='/api/account'&&user.role!=='learner')throw fail(403,'Instructor deletion requires a local operator to review resource and feedback ownership.');
+    const key=`reauth:${user.id}`,rate=failures.get(key)||{count:0,until:0};if(rate.until>Date.now()&&rate.count>=5)throw fail(429,'Too many confirmation attempts. Try again in 15 minutes.');
+    if(typeof body.currentPassword!=='string'||body.currentPassword.length>128||!store.authenticate(user.name,body.currentPassword)){failures.set(key,{count:rate.until>Date.now()?rate.count+1:1,until:Date.now()+900000});throw fail(401,'Current password is incorrect.');}
+    if(path==='/api/account/password'){
+     if(typeof body.newPassword!=='string'||body.newPassword.length<10||body.newPassword.length>128||body.newPassword===body.currentPassword)throw fail(400,'Choose a different password of 10–128 characters.');
+     store.setPassword(user.id,body.newPassword);
+    }else{if(body.confirmation!==`DELETE ${user.name}`)throw fail(400,'Type the exact account deletion confirmation.');store.deleteLearner(user.id);}
+    failures.delete(key);for(const [id,value] of sessions)if(value.user.id===user.id)sessions.delete(id);
+    return reply(res,200,{ok:true},{'Set-Cookie':'hpl_session=; HttpOnly; SameSite=Strict; Path=/; Max-Age=0'});
+   }
    if(path==='/api/logout'&&req.method==='POST'){sessions.delete(token);return reply(res,200,{ok:true},{'Set-Cookie':'hpl_session=; HttpOnly; SameSite=Strict; Path=/; Max-Age=0'});}
    if(path==='/api/progress'&&req.method==='GET')return reply(res,200,store.progress(user.id));
    if(path==='/api/progress'&&req.method==='PUT'){

@@ -25,6 +25,10 @@
 .preferences-dialog{max-width:560px;width:calc(100% - 32px);max-height:calc(100dvh - 32px);overflow:auto;color:#203b34}
 .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 .pilot-guide,.pilot-history{margin-top:24px}
+.account-lifecycle{margin-top:30px;padding-top:24px;border-top:1px solid var(--border)}
+.account-lifecycle details{margin-top:22px;border:1px solid var(--border);border-radius:7px;padding:16px}
+.account-lifecycle summary{cursor:pointer;font-weight:bold;color:var(--green)}
+.account-lifecycle details form{margin-top:18px}
 .pilot-guide li{margin:14px 0}
 .pilot-note{white-space:pre-wrap;overflow-wrap:anywhere}
 #pilot-start .button{margin-top:18px}

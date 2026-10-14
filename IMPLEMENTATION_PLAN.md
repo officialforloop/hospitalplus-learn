@@ -115,3 +115,28 @@ Remaining: learner-selected translation priorities, qualified translation/conten
 - Readable pilot report downloaded through the browser and inspected: expected counts and fictional notes present, no account identity or exercise answers. Desktop (1280px) and mobile (390px) layouts inspected.
 
 Remaining: conduct the voluntary learner/educator pilot, content and translation review, partner alignment, real-device/screen-reader testing, and agreed handling of voluntarily shared reports. Pilot tooling does not establish validation, clinical competence, active task time or real participant retention. Local commit and remote push status are reported separately in the delivery message.
+
+## Implemented: account lifecycle (milestone 7)
+
+- `backend.mjs`: authenticated owner-scoped account export; current-password-protected password changes; learner self-deletion with exact confirmation and transactional removal of progress, submissions, linked reviews and assignments. Instructor self-deletion is explicitly unsupported pending ownership review.
+- Existing same-origin mutation checks, API no-store headers and account/assignment authorization remain enforced. Five failed current-password confirmations trigger a 15-minute limit. Passwords are salted/scrypt-hashed; changing credentials signs out every session. Each request verifies the session against current database credentials, including resets performed by another local process.
+- `scripts/reset-password.mjs`: operator-only local reset with an explicit command flag and a random one-time-displayed temporary password. It preserves progress; verifying the owner and privately delivering the password are operator responsibilities. No email or self-service recovery is claimed. Instructor provisioning guidance updated.
+- `public/account-lifecycle.js`, `public/accounts.js`, `public/styles.css`: shared-theme account management with password confirmation, deletion consequences, account download and unsaved-work guards. Successful change/deletion returns to separate guest work. No existing account was changed/deleted during browser QA.
+- Version-7 service-worker assets include the new UI module; authenticated API responses remain excluded.
+
+### Verification on 14 October 2026
+
+- All 38 tests pass. Five new lifecycle tests cover authenticated/no-store/scoped exports without credentials; current-password/origin enforcement; all-session revocation and operator reset; self-only deletion and other-account preservation; rate limits; deletion rollback and password persistence after database reopen.
+- Browser QA used an isolated in-memory preview at port 3102. Signed into a fictional preview account, inspected password/deletion forms and warnings at desktop/mobile widths, downloaded account JSON and verified no credential fields/cookies.
+- Saved fictional vitals draft value 118 and a fictional note; reloaded and verified both account draft and session persisted. Initial load reached Offline copy ready.
+- Stopped only the preview server: account export failed visibly; cached-shell reload showed guest/sign-in access and unavailable-server messaging, with no reused authenticated account controls or data.
+
+Remaining: instructor-account deletion/ownership transfer, email/self-service recovery, deployed HTTPS governance, durable offline account queues, reviewed translations, educator/learner pilot and assistive-technology testing. Deletion does not erase backups, prior exports/shared files or separate browser-local data. No local commit or remote publication was made for milestone 7.
+
+## Phase screenshot documentation — 14 October 2026
+
+- Captured 30 unedited browser screenshots in `docs/screenshots/`: desktop/mobile pairs for 15 implemented layouts across milestones 1–7. Overview, lesson, observations/feedback, portfolio, notes, handover, sign-in, learner account, instructor review, resource discovery/curation, language preferences, pilot start/recording and account lifecycle are included.
+- README now embeds linked thumbnails in seven expandable phase galleries. These show the current build grouped by feature introduction, not historical versions. Capture notes record routes, viewports, fictional fixture context and remaining validation limits.
+- Used a separate in-memory preview on loopback port 3103. Existing training data and accounts were not read or modified. Credential fields were empty in all screenshots. The pilot record and unsaved resource metadata are clearly labeled demonstrations.
+- Inspected all desktop/mobile images, decoded every JPEG, and verified all 30 unique README image paths exist. Images total 4,315,857 bytes. All 38 existing tests pass; Git whitespace checks pass.
+- The user requested a local commit including this gallery and the previously uncommitted lifecycle implementation. The resulting commit is reported in the delivery message; remote publication is separate.
