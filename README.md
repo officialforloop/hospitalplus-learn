@@ -15,7 +15,9 @@ A separate training environment would keep fictional scenarios apart from live p
 
 ## Project status
 
-Milestones 1 and 2 are implemented as a dependency-free browser prototype: three lessons and fictional exercises (observations, traceable documentation, structured handover), scenario-specific checklist feedback and retries, separate device-local drafts, suggested next steps, progress portfolio, and downloads. Existing milestone-1 progress migrates automatically. A versioned service worker caches all learning screens for offline access after the first successful online visit.
+Implemented: three lessons and fictional exercises, checklist feedback and retries, guest drafts and portfolio exports, learner/instructor accounts with isolated SQLite storage, assignments and feedback, resource discovery, language/reading preferences, and voluntary local pilot records. The buildless app has no third-party runtime dependencies. A versioned service worker caches learning and pilot screens after the first successful online visit; account APIs require the learning server.
+
+Lessons and rubrics remain draft material awaiting qualified instructor review. Pilot tools are ready for a walkthrough; a real learner pilot, reviewed translations and institutional curriculum alignment have not been completed.
 
 ## Run locally
 
@@ -26,6 +28,12 @@ npm start
 ```
 
 Open http://localhost:3100. Run automated checks with `npm test`.
+
+## Language and reading preferences
+
+On the first visit, a language-selection modal suggests the first supported browser language. Use **Language / Reading** to change it later, enlarge reading text, or increase line spacing. Preferences are saved on this browser separately from learning work and are available after offline installation. If storage is blocked, changes apply only for the current visit and a message explains the failure.
+
+English is currently the only interface and lesson language. Yoruba, Hausa, Igbo, French, Portuguese, Arabic and Swahili selections record a preference and explicitly show translation pending; they do not translate lessons. Reviewed translations, local curriculum alignment and assistive-technology validation remain pending.
 
 ## Prototype limitations
 
@@ -46,6 +54,16 @@ Open `#resources` to search six starter entries by title, topic, publisher and c
 Signed-in instructors can add and edit their own resource metadata: source URL, publisher, related skill, language, institutional context, local relevance and review status. Institution links are visible to all signed-in accounts on this local learning server. A declared review records the instructor username and date; the application does not independently verify their qualifications or approve a curriculum. The demo placement entry remains pending review.
 
 Institution filtering includes that context’s resources alongside general references. Related-practice links connect discovery to the existing three-exercise pathway. Formal institution-specific curricula and qualified approval remain pending. Guest/offline use includes starter metadata and cached lessons, while instructor-curated metadata and external pages need connectivity.
+
+## Pilot and demonstration workspace (milestone 6 foundation)
+
+Open **Pilot / Demo** (`#pilot`) and tick the voluntary recording checkbox, then start a session. Follow the linked walkthrough: read a lesson, find/open a resource, complete and retry a fictional exercise, inspect the portfolio, mark an interruption and reload. Return to Pilot / Demo to finish and export a JSON or readable text report.
+
+Recording is off until started. It stores event types, timestamps, scenario IDs and checklist counts, plus optional notes, on this browser only. It excludes usernames, search terms, credentials and exercise answers. Notes should contain fictional details only. Pilot records are separate from guest/account progress and visible to other people using this browser. There is no analytics upload or automatic instructor sharing.
+
+Up to 20 recent sessions and 200 events per session are retained. Consecutive search/filter actions are grouped. Retries mean additional checks of the same scenario within one session; missed checks are summed across attempts. Return counts mean page reloads during recording, not confirmed recovery. Time includes interruptions. These metrics do not assess clinical competence or establish pilot success.
+
+Use **Finish session** to stop recording; **Mark an interruption** only adds a marker. Failed saves retain the current page's record in memory with a storage warning and retry/export options. Export before closing if saving fails. After initial caching, guest pilot tools work with the server unavailable. See [the pilot guide](docs/PILOT_GUIDE.md) for preparation, observation prompts and evidence limits.
 
 ## Initial proof of concept
 

@@ -80,4 +80,38 @@ These checks do not replace instructor review or real learner validation.
 - Server stopped: cached library loaded and offline-only filtering returned three lessons. Mobile layout checked at 390px.
 - Publisher reference destinations checked on 12 October 2026. External content was linked, not copied.
 
-Pending: qualified content review, formal institution-specific pathways, real learner validation, reviewed multilingual resources and assistive-technology testing. Accessibility/multilingual work is the next implementation phase; account lifecycle and durable synchronization remain explicit gaps.
+Pending: qualified content review, formal institution-specific pathways, real learner validation, reviewed multilingual resources and assistive-technology testing. Account lifecycle and durable synchronization remain explicit gaps.
+
+## Implemented: accessibility and language preferences (milestone 5 foundation)
+
+- `public/preferences.js`: suggest the first supported browser language on first visit and open an accessible native language-selection dialog. Eight language preferences are offered; only English content is available. Other choices explicitly say translation pending and do not change the content language or imply reviewed translations.
+- Persist validated device-local preferences separately from guest/account exercise work. Learners can reopen Language / Reading, choose larger reading text and extra line spacing, or dismiss without saving. Blocked writes apply preferences for the visit and announce that they were not saved.
+- `public/app.js`, `public/index.html`, `public/styles.css`: keyboard guidance, screen-specific document titles, source-sheet/return focus controls, repaired skip-link routing, keyboard-accessible portfolio scrolling, visible input-group focus and larger mobile controls. Shared green/cream theme retained.
+- `public/sw.js`: version-5 cache includes the preferences module; authenticated API responses remain excluded.
+
+### Verification on 13 October 2026
+
+- All 26 Node tests pass, including three new tests covering regional language detection, unsupported-language fallback, malformed/unsupported preference recovery and preference serialization. Account HTTP tests required loopback permission outside the restricted shell sandbox.
+- Browser: first visit showed the modal with English suggested; selected Yoruba (clearly marked translation pending), larger text and spacing. Saved, reloaded and reopened the modal: all selections retained.
+- Source-sheet and return controls moved focus to the named source and exercise; Skip to content focused the current practice screen without changing its route. Escape closed the modal.
+- Desktop at 1280px and mobile at 390px inspected; the mobile dialog scrolls and both actions remain reachable.
+- On an isolated temporary static server at port 3101, first-load installation reached Offline copy ready. Saved fictional systolic value 118; stopped that server and reloaded successfully with the draft restored. Language / Reading remained usable from the cache. The normal server at port 3100 was not stopped.
+
+Remaining: learner-selected translation priorities, qualified translation/content review, translated interface/lessons (including RTL where applicable), partner curriculum alignment, screen-reader and real-device testing, and a learner pilot. These improvements are not an accessibility conformance claim. No local commit or remote publication was made for this phase.
+
+## Implemented: voluntary pilot and demonstration tools (milestone 6 foundation)
+
+- `public/pilot.js`: optional, explicitly started local walkthrough records; start/finish, interruption markers, notes, JSON/text exports, retry saving and separate pilot-data clearing. Recording status stays visible in navigation. No analytics endpoint or automatic sharing.
+- `public/app.js` and `public/library.js`: allowlisted events for lesson-read actions, grouped searches/filters, primary resource opens, checklist attempts/retries and portfolio visits. No usernames, search terms or exercise answers enter pilot events.
+- Validate recovered records, retain 20 recent sessions/200 events each, escape notes, and preserve in-memory records with explicit storage warnings. Page reloads during an active session add return markers. Time includes interruptions; limits remain visible.
+- `public/index.html`, `public/styles.css`, `public/sw.js`: shared-theme Pilot / Demo navigation and responsive screen, version-6 offline cache including the pilot module. API caching and account authorization remain unchanged.
+- `docs/PILOT_GUIDE.md`: voluntary walkthrough protocol, educator/learner prompts, metric definitions, storage/privacy limits and pending real-world validation. README describes implemented milestones and pilot usage.
+
+### Verification on 14 October 2026
+
+- All 33 Node tests pass, including seven pilot tests: opt-in/start/stop boundaries, event privacy/validation, metrics, reload recovery, blocked saves/deletes and retry, corrupted storage, retention bounds and elapsed-time limits. Account HTTP tests passed with loopback permission outside the restricted shell sandbox.
+- Browser walkthrough on isolated port 3101: opted in; added fictional notes; marked a lesson read; searched and opened a cached resource; submitted measurements at 6/7 then 7/7; visited the portfolio. Pilot summary correctly reported one lesson-read action, one grouped search/filter action, one resource open, two checks, one retry and one missed check.
+- Marked an interruption and reloaded: notes, metrics and active recording recovered. Stopped the temporary server and reloaded again: pilot screen/session remained usable from the cache; finished offline. Main app server was not stopped.
+- Readable pilot report downloaded through the browser and inspected: expected counts and fictional notes present, no account identity or exercise answers. Desktop (1280px) and mobile (390px) layouts inspected.
+
+Remaining: conduct the voluntary learner/educator pilot, content and translation review, partner alignment, real-device/screen-reader testing, and agreed handling of voluntarily shared reports. Pilot tooling does not establish validation, clinical competence, active task time or real participant retention. Local commit and remote push status are reported separately in the delivery message.

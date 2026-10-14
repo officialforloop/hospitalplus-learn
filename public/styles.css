@@ -22,3 +22,20 @@
 .resource-editor{margin-top:28px}
 .resource-card .actions{margin-top:18px}
 @media(max-width:700px){.library-filters,.resource-grid{grid-template-columns:1fr}}
+.preferences-dialog{max-width:560px;width:calc(100% - 32px);max-height:calc(100dvh - 32px);overflow:auto;color:#203b34}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+.pilot-guide,.pilot-history{margin-top:24px}
+.pilot-guide li{margin:14px 0}
+.pilot-note{white-space:pre-wrap;overflow-wrap:anywhere}
+#pilot-start .button{margin-top:18px}
+.preferences-dialog::backdrop{background:rgba(18,63,54,.45)}
+.preferences-dialog .structured-label,.preferences-dialog .offline-toggle{margin:18px 0}
+.preferences-dialog .actions{margin-top:20px}
+.input-wrap:focus-within{outline:3px solid #b7782f;outline-offset:4px}
+.input-wrap input:focus-visible{outline:none}
+.table-scroll:focus-visible{outline:3px solid #b7782f;outline-offset:4px}
+html[data-reading-size=large] main .prose p,html[data-reading-size=large] main .prose li,html[data-reading-size=large] main .source-facts,html[data-reading-size=large] main .resource p,html[data-reading-size=large] main .resource-card>p,html[data-reading-size=large] main .lead{font-size:18px}
+html[data-reading-size=large] main label,html[data-reading-size=large] main input,html[data-reading-size=large] main textarea,html[data-reading-size=large] main select,html[data-reading-size=large] main .feedback li{font-size:17px}
+html[data-reading-spacing=true] main p,html[data-reading-spacing=true] main li{line-height:2}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation:none!important;transition:none!important}}
+@media(max-width:700px){button,.button,select,input:not([type=checkbox]){min-height:44px}#preferences-open{font-size:12px;margin-left:0}.preferences-dialog{padding:20px}main{min-width:0}.table-scroll{max-width:100%}}
